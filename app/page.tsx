@@ -14,14 +14,34 @@ import {
 import { Truck, Shield, CreditCard, Headphones } from 'lucide-react';
 
 export default function Home() {
-  const { designSystem, loading } = useDesignSystem();
+  const { designSystem, loading, error } = useDesignSystem();
 
-  if (loading || !designSystem) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !designSystem) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center max-w-md p-8">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Design System Not Found</h1>
+          <p className="text-gray-600 mb-6">
+            Please seed the database first by running:
+          </p>
+          <div className="bg-gray-800 text-green-400 p-4 rounded-lg font-mono text-sm mb-6">
+            curl -X POST http://localhost:3000/api/design-system/seed
+          </div>
+          <p className="text-sm text-gray-500">
+            Or run: <code className="bg-gray-200 px-2 py-1 rounded">npm run seed</code>
+          </p>
         </div>
       </div>
     );
@@ -201,6 +221,17 @@ export default function Home() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: designSystem.colors?.background }}>
+      {/* Quick Dashboard Link */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <a
+          href="/dashboard"
+          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold rounded-full shadow-lg transition-all hover:scale-105"
+        >
+          <span>🎨</span>
+          <span>Customize Store</span>
+        </a>
+      </div>
+
       {/* Navbar */}
       <NavbarVariant2
         designSystem={designSystem}
@@ -210,6 +241,18 @@ export default function Home() {
         brandName="ModernShop"
         categories={['Electronics', 'Fashion', 'Home', 'Sports', 'Beauty', 'Books']}
       />
+
+      {/* Quick Links Bar */}
+      <div className="bg-gray-100 border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+          <div className="flex items-center justify-center gap-6 text-sm">
+            <a href="/shop" className="hover:underline">Shop All</a>
+            <a href="/shop?sort=newest" className="hover:underline">New Arrivals</a>
+            <a href="/shop?sale=true" className="hover:underline">Sale</a>
+            <a href="/dashboard" className="hover:underline">Customize Store</a>
+          </div>
+        </div>
+      </div>
 
       {/* Hero Banner */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -236,7 +279,7 @@ export default function Home() {
           title="Shop by Category"
           categories={categories}
           variant="featured"
-          onCategoryClick={(name) => console.log('Category clicked:', name)}
+          onCategoryClick={(name) => (window.location.href = `/shop?category=${name.toLowerCase()}`)}
         />
       </div>
 
@@ -258,13 +301,20 @@ export default function Home() {
           designSystem={designSystem}
           title="Trending Now"
           products={trendingProducts}
+          onProductClick={(id) => (window.location.href = `/product/${id}`)}
           renderProduct={(product) => (
-            <div className="w-64">
+            <div className="w-64" onClick={() => (window.location.href = `/product/${product.id}`)}>
               <ProductCardVariant1
                 designSystem={designSystem}
                 product={product}
-                onAddToCart={(id) => console.log('Add to cart:', id)}
-                onToggleWishlist={(id) => console.log('Toggle wishlist:', id)}
+                onAddToCart={(id) => {
+                  alert('Added to cart!');
+                  console.log('Add to cart:', id);
+                }}
+                onToggleWishlist={(id) => {
+                  alert('Added to wishlist!');
+                  console.log('Toggle wishlist:', id);
+                }}
               />
             </div>
           )}
@@ -290,40 +340,6 @@ export default function Home() {
         />
       </div>
 
-      {/* Newsletter Banner */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div
-          className="p-12 text-center rounded-2xl"
-          style={{
-            background: `linear-gradient(135deg, ${designSystem.colors?.primary} 0%, ${designSystem.colors?.secondary} 100%)`,
-          }}
-        >
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Subscribe to Our Newsletter
-          </h2>
-          <p className="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
-            Get exclusive deals, new arrivals, and insider-only discounts delivered to your inbox
-          </p>
-          <div className="flex gap-3 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-6 py-4 rounded-full focus:outline-none focus:ring-2"
-              style={{ color: designSystem.colors?.foreground }}
-            />
-            <button
-              className="px-8 py-4 rounded-full font-semibold transition-all hover:scale-105"
-              style={{
-                backgroundColor: designSystem.colors?.accent,
-                color: '#ffffff',
-              }}
-            >
-              Subscribe
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Footer */}
       <FooterVariant1
         designSystem={designSystem}
@@ -333,28 +349,28 @@ export default function Home() {
           {
             title: 'Shop',
             items: [
-              { label: 'All Products', href: '#' },
-              { label: 'Best Sellers', href: '#' },
-              { label: 'New Arrivals', href: '#' },
-              { label: 'Sale', href: '#' },
+              { label: 'All Products', href: '/shop' },
+              { label: 'Best Sellers', href: '/shop?sort=featured' },
+              { label: 'New Arrivals', href: '/shop?sort=newest' },
+              { label: 'Sale', href: '/shop?sale=true' },
             ],
           },
           {
             title: 'Support',
             items: [
-              { label: 'Contact Us', href: '#' },
-              { label: 'FAQs', href: '#' },
-              { label: 'Shipping Info', href: '#' },
-              { label: 'Returns', href: '#' },
+              { label: 'Contact Us', href: '/contact' },
+              { label: 'FAQs', href: '/faq' },
+              { label: 'Shipping Info', href: '/shipping' },
+              { label: 'Returns', href: '/returns' },
             ],
           },
           {
             title: 'Company',
             items: [
-              { label: 'About Us', href: '#' },
-              { label: 'Careers', href: '#' },
-              { label: 'Press', href: '#' },
-              { label: 'Blog', href: '#' },
+              { label: 'About Us', href: '/about' },
+              { label: 'Careers', href: '/careers' },
+              { label: 'Dashboard', href: '/dashboard' },
+              { label: 'Profile', href: '/profile' },
             ],
           },
         ]}
