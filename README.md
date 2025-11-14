@@ -1,37 +1,168 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# E-commerce Component Library
 
-## Getting Started
+A comprehensive, customizable e-commerce component library built with Next.js, TypeScript, Tailwind CSS, and MongoDB.
 
-First, run the development server:
+## Features
 
+- **Design System**: Fully customizable design tokens stored in MongoDB
+- **Multiple Component Variants**: Each component has 2-3 different design variants
+- **Dynamic Theming**: Colors, roundness, spacing, typography all configurable
+- **Type-Safe**: Built with TypeScript for better developer experience
+- **Responsive**: All components are mobile-friendly
+
+## Components
+
+### Navigation
+- **NavbarVariant1**: Clean minimal navbar with search
+- **NavbarVariant2**: Feature-rich navbar with categories and top bar
+- **NavbarVariant3**: Bold colored navbar with integrated search
+
+### Product Cards
+- **ProductCardVariant1**: Classic card with hover effects and wishlist
+- **ProductCardVariant2**: Overlay actions with quick view
+- **ProductCardVariant3**: Flexible horizontal/vertical layout with ratings
+
+### Banners
+- **BannerVariant1**: Hero banner with gradient overlay
+- **BannerVariant2**: Split layout with image and content
+- **BannerVariant3**: Grid of promotional banners
+
+### Cart
+- **CartItem**: Individual cart item with quantity controls
+- **CartSummary**: Order summary with totals and checkout
+
+### Other Components
+- **CategoryCard**: Product category display (3 variants)
+- **SearchBar**: Search input (3 variants)
+- **TestimonialCard**: Customer reviews (3 variants)
+- **Badge**: Status and label badges
+- **Button**: Customizable button component
+- **FooterVariant1**: Comprehensive footer with links
+- **FooterVariant2**: Newsletter-focused footer
+
+## Setup
+
+1. Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Set up MongoDB:
+```bash
+# Copy environment variables
+cp .env.example .env.local
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# Update MONGODB_URI in .env.local
+MONGODB_URI=mongodb://localhost:27017/ecommerce
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Seed the default design system:
+```bash
+# Start your dev server
+npm run dev
 
-## Learn More
+# In another terminal, seed the database
+curl -X POST http://localhost:3000/api/design-system/seed
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Usage
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Using Components
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```tsx
+import { NavbarVariant1, ProductCardVariant1 } from '@/components/ecommerce';
+import { useDesignSystem } from '@/hooks/useDesignSystem';
 
-## Deploy on Vercel
+export default function MyPage() {
+  const { designSystem, loading } = useDesignSystem();
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+  if (loading || !designSystem) return <div>Loading...</div>;
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# automnexshop
+  return (
+    <>
+      <NavbarVariant1
+        designSystem={designSystem}
+        isUserLoggedIn={true}
+        cartItemCount={3}
+        brandName="My Store"
+      />
+      
+      <ProductCardVariant1
+        designSystem={designSystem}
+        product={{
+          id: '1',
+          name: 'Product Name',
+          price: 99.99,
+          image: '/product.jpg',
+        }}
+        onAddToCart={(id) => console.log('Add to cart:', id)}
+      />
+    </>
+  );
+}
+```
+
+### Customizing Design System
+
+```tsx
+const { updateDesignSystem } = useDesignSystem();
+
+// Update colors
+await updateDesignSystem({
+  colors: {
+    ...designSystem.colors,
+    primary: '#ff0000',
+  },
+});
+
+// Update button roundness
+await updateDesignSystem({
+  roundness: {
+    ...designSystem.roundness,
+    md: '1rem',
+  },
+});
+```
+
+## Design System Structure
+
+The design system includes:
+
+- **Colors**: Primary, secondary, tertiary, accent, background, foreground, muted, borders, status colors
+- **Button Styles**: Primary, secondary, outline, ghost variants
+- **Roundness**: none, sm, md, lg, xl, full
+- **Spacing**: xs, sm, md, lg, xl
+- **Typography**: Font families and sizes
+- **Shadows**: sm, md, lg, xl
+
+## API Routes
+
+- `GET /api/design-system` - Get active design system
+- `POST /api/design-system` - Create new design system
+- `PUT /api/design-system` - Update existing design system
+- `POST /api/design-system/seed` - Seed default design system
+
+## Component Props
+
+All components accept:
+- `designSystem`: The design system configuration
+- Component-specific props (see TypeScript types)
+
+Common props:
+- `isUserLoggedIn`: Boolean for user state
+- `cartItemCount`: Number of items in cart
+- `onAddToCart`: Callback for add to cart action
+- `variant`: Component variant selection
+
+## Development
+
+```bash
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
